@@ -1,28 +1,20 @@
-import requests
-import json
-import base64
-from Configuration import web_shop_code_encryption_salt
-from PrivateClasses.AESCipher import AESCipher
-from functools import reduce
-
-
 class SaveAccessNestedDict:
-    def __init__(self, path=None, dict=None, default=None):
-        self.path = path
-        self.dict = dict
-        self.default = default
+    def get(self, dictionary, path, default):
+        try:
+            if len(path) == 1:
+                return dictionary[path[0]]
+            return self.get(dictionary[path[0]], path[1:], default)
+        except KeyError:
+            return default
 
-    def get(self):
-        if self.path is not None or self.dict is not None:
-            try:
-                result = reduce(lambda val, key: val.get(key) if val else None, self.path, self.dict)
-                if result is not None:
-                    self.default = result
-            except Exception as error:
-                pass
-        return self.default
 
-a = {'something': 'else', 'name': {'john': 'doe'}}
-print(SaveAccessNestedDict(path=['something'], dict=a, default='strange').get())
-print(SaveAccessNestedDict(path=['name', 'john'], dict=a, default='Flanger').get())
-print(SaveAccessNestedDict(path=['name', 'john', 'nobody'], dict=a, default='Doe').get())
+a = {'name': {'John': 'Doe'}}
+print(SaveAccessNestedDict().get(a, ['name'], 'Doe'))
+print(SaveAccessNestedDict().get(a, ['name', 'John'], 'Doe'))
+print(SaveAccessNestedDict().get(a, ['name', 'Strange'], 'Doe'))
+----
+result:
+
+{'John': 'Doe'}
+Doe
+Doe
